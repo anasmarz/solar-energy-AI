@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 import pickle
 import numpy as np
-from tensorflow.keras.models import load_model
 import pandas as pd
 
 app = Flask(__name__)
@@ -29,7 +28,7 @@ with open('energy_pricing_model.pkl', 'rb') as file:
 with open('energydemand_model.pkl', 'rb') as pkl_file:
     energy_demand_model = pickle.load(pkl_file)
 
-weather_model = load_model('weather_forecasting.h5')
+
 
 # Define input shape for the LSTM model
 n_timesteps = 1  # Adjust based on your model's configuration
