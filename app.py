@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 import pickle
 import numpy as np
 import pandas as pd
+import requests  # Add this line
+
 
 app = Flask(__name__)
 # Define forecast mapping for energy output calculation
@@ -59,37 +61,24 @@ def predict_demand():
 @app.route('/predict_weather', methods=['POST'])
 def predict_weather():
     # Fetch weather forecast data from the API
-    response = requests.get('https://api.data.gov.my/weather/forecast/')
+    response = requests.get('https://api.data.gov.my/weather/forecast?contains=Sepang@location__location_name')
 
     # Check if the request was successful (status code 200)
     if response.status_code == 200:
         # Parse the JSON data
         data = response.json()
 
-        # Create a list to hold the processed data
-        records = []
+        # Create a list to hold the energy output values
+        energyoutput = []
 
         # Process each item in the JSON data
         for item in data:
-            record = {
-                'Location': item['location']['location_name'],
-                'Date': item['date'],
-                'Morning Forecast': item['morning_forecast'],
-                'Afternoon Forecast': item['afternoon_forecast'],
-                'Night Forecast': item['night_forecast'],
-                'Summary Forecast': item['summary_forecast'],
-                'Summary When': item['summary_when'],
-                'Min Temperature (°C)': item['min_temp'],
-                'Max Temperature (°C)': item['max_temp']
-            }
-            
             # Calculate energy output for each record
-            record['Energy Output'] = record['Max Temperature (°C)'] * 0.5 + forecast_mapping.get(record['Morning Forecast'], 0) * 100
-            
-            records.append(record)
+            energy_output = item['max_temp'] * 0.5 + forecast_mapping.get(item['morning_forecast'], 0) * 100
+            energyoutput.append(energy_output)
 
         # Return the energy output data as JSON
-        return jsonify(records)
+        return jsonify(energyoutput)
     
     else:
         # Return an error message if the API request fails
