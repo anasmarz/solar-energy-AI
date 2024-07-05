@@ -52,11 +52,18 @@ def predict_demand():
     data = request.get_json()
     periods = data.get('periods', 10)  # Number of periods to forecast, default to 10
 
-    # Make predictions
-    forecast = energy_demand_model.forecast(steps=periods)
-    forecast = forecast.tolist()  # Convert forecast to list
-
-    return jsonify({'forecast': forecast})
+    try:
+        # Ensure periods is an integer
+        periods = int(periods)
+        
+        # Check if your model requires a specific format for periods or any date index
+        forecast = energy_demand_model.forecast(steps=periods)
+        forecast = forecast.tolist()  # Convert forecast to list
+        return jsonify({'forecast': forecast})
+    except Exception as e:
+        # Log the error and return a 500 response
+        print(f"Error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/predict_weather', methods=['POST'])
 def predict_weather():
